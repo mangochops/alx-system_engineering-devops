@@ -1,3 +1,7 @@
-#!/usr/bin/env bash
-#  Bash script that displays all active IPv4 IPs on the machine it’s executed on.
-sudo cat /etc/hosts | head -2 | cut -f1
+#!/bin/bash
+
+# Use the `ip` command to get the list of IPv4 addresses
+# Filter out the loopback address (127.0.0.1) and any inactive addresses
+# Display only the IPv4 addresses
+ip -4 addr show | grep inet | awk '{print $2}' | cut -d'/' -f1 | grep -v '127.0.0.1'
+
