@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# This script configures domain zones and displays information about subdomains.
+
+# Function to add subdomains to a domain
+add_subdomain() {
+    local domain="$1"
+    local subdomain="$2"
+    local ip="$3"
+    echo "$subdomain.$domain.  IN  A  $ip" >> /etc/bind/db.$domain
+}
+
+# Main script
+if [[ $# -ne 1 ]]; then
+    echo "Usage: $0 domain"
+    exit 1
+fi
+
+domain="$1"
+lb_ip="your_lb_ip"
+web_01_ip="your_web_01_ip"
+web_02_ip="your_web_02_ip"
+
+# Add subdomains
+add_subdomain "$domain" www "$lb_ip"
+add_subdomain "$domain" lb-01 "$lb_ip"
+add_subdomain "$domain" web-01 "$web_01_ip"
+add_subdomain "$domain" web-02 "$web_02_ip"
+
+# Reload BIND service
+service bind9 reload
+
+# Function to display information about a subdomain
+display_info() {
+    local subdomain="$1"
+    local record_type=$(dig $subdomain.$domain | awk '/ANSWER SECTION:/ {getline; print $4}')
+
+    echo "The subdomain $subdomain is a $record_type record and points to $(dig $subdomain.$domain +short)"
+}
+
+# Display information for default subdomains
+display_info www
+display_info lb-01
+display_info web-01
+display_info web-02
