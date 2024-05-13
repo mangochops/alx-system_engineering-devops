@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Configure Nginx to run as nginx user and listen on port 8080
+
+# Check if nginx is already running as nginx user
+if ps aux | grep -q '[n]ginx: master process'; then
+    echo "Nginx is already running as nginx user."
+    exit 0
+fi
+
+# Stop Nginx if it's running as root
+if ps aux | grep -q '[n]ginx: master process'; then
+    systemctl stop nginx
+fi
+
+# Edit Nginx configuration to run as nginx user
+sed -i 's/user\s*nginx;/user nginx;/g' /etc/nginx/nginx.conf
+
+# Edit Nginx configuration to listen on port 8080
+sed -i 's/listen\s*80;/listen 8080;/g' /etc/nginx/sites-available/default
+
+# Start Nginx
+systemctl start nginx
+
+# Verify Nginx is running as nginx user and listening on port 8080
+ps aux | grep '[n]ginx'
+nc -z 0 8080
